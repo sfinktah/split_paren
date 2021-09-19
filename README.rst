@@ -1,7 +1,11 @@
 split_paren
 
+... code-block:: python
+    def paren_multisplit(subject, separator=",", lparen="([{'\"", rparen=[")", "]", "}", "'", '"'], strip=None, escape=escape_backslash):
+
+
 Using split_paren
-============
+=========================
 
 .. code-block:: python
 
@@ -9,7 +13,8 @@ Using split_paren
     
     # example usage
     
-    > b'result'
+    >>> paren_multisplit('ordinals="1,2,3",4,5', ',', '\'"', '\'"')
+    ['ordinals="1,2,3"', '4', '5']
 
 Changelog
 =========
