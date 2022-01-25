@@ -42,7 +42,7 @@ def _any(o, func=None):
     _each(o, testEach)
     return antmp
 
-def paren_split(subject, separator=",", lparen="(", rparen=")", strip=" "):
+def paren_split(subject, separator=",", lparen="(", rparen=")", strip=" ", rtrim=False):
     # https://stackoverflow.com/questions/42070323/split-on-spaces-not-inside-parentheses-in-python/42070578#42070578
     nb_brackets=0
     subject = subject.strip(strip or separator) # get rid of leading/trailing seps
@@ -57,7 +57,12 @@ def paren_split(subject, separator=",", lparen="(", rparen=")", strip=" "):
             l.append(i + 1) # skip seperator
         # handle malformed string
         if nb_brackets < 0:
-            raise Exception("Syntax error (unmatch rparen)")
+            if rtrim:
+                subject = subject[0:i]
+                # print("retrying with: {}".format(subject))
+                return paren_split(subject, separator, lparen, rparen, strip)
+            else:
+                raise Exception("Syntax error (unmatch rparen)")
 
     l.append(len(subject))
     # handle missing closing parentheses
@@ -84,7 +89,21 @@ def escape_backslash(subject, position):
 
     return (previous_escapes % 2) != 0
                     
-def paren_multisplit(subject, separator=",", lparen="([{'\"", rparen=[")", "]", "}", "'", '"'], strip=None, escape=escape_backslash):
+def func(ea=None):
+    """
+    func
+
+    @param ea: linear address
+    """
+
+    ea = eax(ea)
+    
+
+
+def paren_multisplit(subject, separator=",", lparen="([{'\"", rparen=[")", "]", "}", "'", '"'], strip=None, escape=escape_backslash, skipEmpty=False):
+    if isinstance(subject, list):
+        return [paren_multisplit(x, separator, lparen, rparen, strip, escape, skipEmpty) for x in subject]
+
     def is_separator(c):
         if type(c) == type(separator):
             return c == separator
@@ -137,4 +156,7 @@ def paren_multisplit(subject, separator=",", lparen="([{'\"", rparen=[")", "]", 
     elif _any(brackets, lambda x, *a: x < 0):
         raise Exception("Syntax error (unmatch lparen) final")
 
-    return([subject[i:j-1].strip(strip) for i, j in zip(l, l[1:])])
+    result = [subject[i:j-1].strip(strip) for i, j in zip(l, l[1:])]
+    if skipEmpty:
+        return [x for x in result if x != '']
+    return result
